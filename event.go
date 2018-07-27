@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/protos/peer"
@@ -175,6 +176,11 @@ func (t *SimpleAsset) getHistoryForDevice(stub shim.ChaincodeStubInterface, args
 		buffer.WriteString("{\"TxId\":")
 		buffer.WriteString("\"")
 		buffer.WriteString(queryResponse.TxId)
+		buffer.WriteString("\"")
+
+		buffer.WriteString(", \"Timestamp\":")
+		buffer.WriteString("\"")
+		buffer.WriteString(time.Unix(queryResponse.Timestamp.Seconds, int64(queryResponse.Timestamp.Nanos)).String())
 		buffer.WriteString("\"")
 
 		buffer.WriteString(", \"Record\":")
