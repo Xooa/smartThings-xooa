@@ -11,7 +11,7 @@
 definition(
     name: "Xooa Logger",
     namespace: "xooa",
-    author: "Xooa",
+    author: "Arisht Jain",
     description: "Log SmartThings events to Xooa",
     category: "Convenience",
     iconUrl: "http://cdn.device-icons.smartthings.com/Home/home1-icn.png",
@@ -108,7 +108,7 @@ def doSubscriptions() {
 }
 
 def genericHandler(evt) {
-    def httpUrl = appSettings.appId
+	def httpUrl = appSettings.appId
     def bearer = appSettings.apiToken
 /*
     log.debug("------------------------------")

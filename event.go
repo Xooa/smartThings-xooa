@@ -7,6 +7,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 
@@ -30,28 +31,26 @@ func (t *SimpleAsset) Init(stub shim.ChaincodeStubInterface) peer.Response {
 // method may create a new asset by specifying a new key-value pair.
 func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 	// Extract the function and args from the transaction proposal
-	fn, args := stub.GetFunctionAndParameters()
+	function, args := stub.GetFunctionAndParameters()
 
-	var result string
-	var err error
-	if fn == "saveNewEvent" {
-		result, err = saveNewEvent(stub, args)
-	} else { // assume 'getEvent' even if fn is nil
-		result, err = getEvent(stub, args)
-	}
-	if err != nil {
-		return shim.Error(err.Error())
+	if function == "saveNewEvent" {
+		return t.saveNewEvent(stub, args)
+	} else if function == "getDeviceLastEvent" {
+		return t.getDeviceLastEvent(stub)
+	} else if function == "getHistoryForDevice" {
+		return t.getHistoryForDevice(stub, args)
+	} else if function == "getEvent" {
+		return t.getEvent(stub, args)
 	}
 
-	// Return the result as success payload
-	return shim.Success([]byte(result))
+	return shim.Error("Invalid function name for 'invoke'")
 }
 
 // Set stores the asset (both key and value) on the ledger. If the key exists,
 // it will override the value with the new one
-func saveNewEvent(stub shim.ChaincodeStubInterface, args []string) (string, error) {
+func (t *SimpleAsset) saveNewEvent(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	if len(args) != 17 {
-		return "", fmt.Errorf("incorrect arguments. Expecting full event details")
+		return shim.Error("incorrect arguments. Expecting full event details")
 	}
 
 	displayName := strings.ToLower(args[0])
@@ -73,41 +72,119 @@ func saveNewEvent(stub shim.ChaincodeStubInterface, args []string) (string, erro
 	time := strings.ToLower(args[16])
 
 	//Building the event json string manually without struct marshalling
-	eventJSONasString := `{"docType":"Event",  "displayName": "` + displayName + `", 
-	"device": "` + device + `", "isStateChange": "` + isStateChange + `", 
-	"id": "` + id + `", "description": "` + description + `", 
-	"descriptionText": "` + descriptionText + `", "installedSmartAppId": "` + installedSmartAppID + `", 
-	"isDigital": "` + isDigital + `", "isPhysical": "` + isPhysical + `", "deviceId": "` + deviceID + `", 
-	"location": "` + location + `", "locationId": "` + locationID + `", "source": "` + source + `", 
-	"unit": "` + unit + `", "value": "` + value + `", "name": "` + name + `", "time": "` + time + `"}`
+	eventJSONasString := `{"docType":"Event",  "displayName": "` + displayName + `",
+	 "device": "` + device + `", "isStateChange": "` + isStateChange + `",
+	 "id": "` + id + `", "description": "` + description + `",
+	 "descriptionText": "` + descriptionText + `", "installedSmartAppId": "` + installedSmartAppID + `",
+	 "isDigital": "` + isDigital + `", "isPhysical": "` + isPhysical + `", "deviceId": "` + deviceID + `",
+	 "location": "` + location + `", "locationId": "` + locationID + `", "source": "` + source + `",
+	 "unit": "` + unit + `", "value": "` + value + `", "name": "` + name + `", "time": "` + time + `"}`
 	eventJSONasBytes := []byte(eventJSONasString)
 
-	err1 := stub.PutState(id, eventJSONasBytes)
+	err1 := stub.PutState(deviceID, eventJSONasBytes)
 	if err1 != nil {
-		return "", fmt.Errorf("Failed to set asset: %s", args[0])
+		return shim.Error("Failed to set asset")
 	}
-	return id, nil
+	return shim.Success([]byte(device))
 }
 
 // Get returns the value of the specified asset key
-func getEvent(stub shim.ChaincodeStubInterface, args []string) (string, error) {
+func (t *SimpleAsset) getEvent(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var userID, jsonResp string
 	var err error
 
 	if len(args) != 1 {
-		return "", fmt.Errorf("Incorrect arguments. Expecting a key")
+		return shim.Error("Incorrect arguments. Expecting a key")
 	}
 
 	valueAsBytes, err := stub.GetState(args[0])
 	if err != nil {
 		jsonResp = "{\"Error\":\"Failed to get state for " + userID + "\"}"
-		return "", fmt.Errorf(jsonResp)
+		return shim.Error(jsonResp)
 	}
 	if valueAsBytes == nil {
-		jsonResp = "{\"Error\":\"Marble does not exist: " + userID + "\"}"
-		return "", fmt.Errorf(jsonResp)
+		jsonResp = "{\"Error\":\"Transaction does not exist: " + userID + "\"}"
+		return shim.Error(jsonResp)
 	}
-	return string(valueAsBytes), nil
+	return shim.Success(valueAsBytes)
+}
+
+// Gets the last transactions for all unique keys i.e., all devices
+func (t *SimpleAsset) getDeviceLastEvent(stub shim.ChaincodeStubInterface) peer.Response {
+	resultsIterator, err := stub.GetStateByRange("", "")
+	if err != nil {
+		return shim.Error("Failed to get data " + err.Error())
+	}
+	defer resultsIterator.Close()
+
+	var buffer bytes.Buffer
+	buffer.WriteString("[")
+
+	bArrayMemberAlreadyWritten := false
+
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		if bArrayMemberAlreadyWritten == true {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString("{\"DeviceId\":")
+		buffer.WriteString("\"")
+		buffer.WriteString(queryResponse.Key)
+		buffer.WriteString("\"")
+
+		buffer.WriteString(", \"Record\":")
+		buffer.WriteString(string(queryResponse.Value))
+		buffer.WriteString("}")
+		bArrayMemberAlreadyWritten = true
+	}
+	buffer.WriteString("]")
+
+	return shim.Success(buffer.Bytes())
+}
+
+// For a given device, return its historical data
+func (t *SimpleAsset) getHistoryForDevice(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+	if len(args) != 1 {
+		return shim.Error("Expected argument lenght doesnt match")
+	}
+
+	resultsIterator, err := stub.GetHistoryForKey(args[0])
+	if err != nil {
+		return shim.Error("Failed to get data " + err.Error())
+	}
+	defer resultsIterator.Close()
+
+	var buffer bytes.Buffer
+	buffer.WriteString("[")
+
+	bArrayMemberAlreadyWritten := false
+
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+
+		if bArrayMemberAlreadyWritten == true {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString("{\"TxId\":")
+		buffer.WriteString("\"")
+		buffer.WriteString(queryResponse.TxId)
+		buffer.WriteString("\"")
+
+		buffer.WriteString(", \"Record\":")
+		buffer.WriteString(string(queryResponse.Value))
+		buffer.WriteString("}")
+		bArrayMemberAlreadyWritten = true
+	}
+	buffer.WriteString("]")
+
+	return shim.Success(buffer.Bytes())
 }
 
 // main function starts up the chaincode in the container during instantiate
