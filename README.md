@@ -15,11 +15,9 @@ The repository in use for this example is <https://github.com/Xooa/smartthings-x
 8. The next step is deployment details. Select **master** as the branch and **smartthings-xooa** as the chaincode from the dropdown available. Click **Deploy**.
 9. Sit back and relax while Xooa sets up the backend. Once *Xooa* is finished with the process you will see Success for all the process listed on screen.
 10. You will be redirected to app dashboard once the deployment is complete.
-
-### Accessing Xooa dashboard
-1. Take note of **App ID** from the dashboard under `Basic Information` tab. It will be required later to connect the **smartApp**.
-2. From the app dashboard, navigate to **Identities** tab.
-3. For the identity available, click **Show API token** and copy the token value. We will be using this for authorizing the API requests. This will be your `API Token` needed to authorize **smartApp**.
+11. Take note of **App ID** from the dashboard under `Basic Information` tab. It will be required later to connect the **smartApp**.
+12. From the app dashboard, navigate to **Identities** tab.
+13. For the identity available, click **Show API token** and copy the token value. We will be using this for authorizing the API requests. This will be your `API Token` needed to authorize **smartApp**.
 
 ___
 
