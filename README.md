@@ -50,7 +50,8 @@ Alternative to steps 3-7, to setup via Github integration,
 11. Click on **Update from Repo**.
 12. Click on **smartThings-xooa (master)**.
 13. Select **xooa-logger.groovy** from **New(only in GitHub)** column.
-14. Click on **Execute Update**.
+14. Check **Publish**.
+15. Click on **Execute Update**.
 
 ### SmartApp Configuration
 1. Click on the smartApp you just deployed.
