@@ -1,3 +1,17 @@
+ /**
+ *  Blockchain Event Logger
+ *
+ *  Copyright 2018 Xooa
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at:
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+ *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing permissions and limitations under the License.
+ */
  /*
  * Original source via Brian Keifer:
  *  https://raw.githubusercontent.com/bkeifer/smartthings/master/Logstash%20Event%20Logger/LogstashEventLogger.groovy
@@ -6,13 +20,14 @@
  *  https://github.com/xooa/smartThings-xooa
  *
  * Changes:
- *  Logs to xooa backend instead of Logstash
+ *  Logs to Xooa blockchain platform instead of Logstash
  */
+ 
 definition(
-    name: "Xooa Logger",
+    name: "Blockchain Event Logger",
     namespace: "xooa",
     author: "Arisht Jain",
-    description: "Log SmartThings events to Xooa",
+    description: "Log smartThings events to Xooa blockchain platform.",
     category: "Convenience",
     iconUrl: "http://cdn.device-icons.smartthings.com/Home/home1-icn.png",
     iconX2Url: "http://cdn.device-icons.smartthings.com/Home/home1-icn@2x.png",

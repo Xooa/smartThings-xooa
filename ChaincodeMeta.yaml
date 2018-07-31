@@ -1,4 +1,4 @@
 chaincodes:
   smart-things:
-    path: /
+    path: /Chaincode/
     language: go
