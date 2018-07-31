@@ -123,8 +123,8 @@ def doSubscriptions() {
 }
 
 def genericHandler(evt) {
-	def httpUrl = appSettings.appId
-    def bearer = appSettings.apiToken
+	def httpUrl = appSettings.appId // appId will constitute the URL request.
+    def bearer = appSettings.apiToken // bearer will be passed in header as authorisation for the request to Xooa blockchain platform
 /*
     log.debug("------------------------------")
     log.debug("date: ${evt.date}")
@@ -166,6 +166,7 @@ def genericHandler(evt) {
     json += "\"${evt.name}\","
     json += "\"${evt.isoDate}\""
     json += "]}"
+    // saveNewEvent() function of chaincode is called in this request.
     def params = [
         uri: "http://api-gw-1264758337.ap-south-1.elb.amazonaws.com/api/${httpUrl}/invoke/saveNewEvent",
         headers: [

@@ -47,8 +47,7 @@ func (t *SimpleAsset) Init(stub shim.ChaincodeStubInterface) peer.Response {
 }
 
 // Invoke is called per transaction on the chaincode. Each transaction is
-// either a 'get' or a 'set' on the asset created by Init function. The Set
-// method may create a new asset by specifying a new key-value pair.
+// either updating the state or retreiving the state created by Init function.
 func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 	// Extract the function and args from the transaction proposal
 	function, args := stub.GetFunctionAndParameters()
@@ -66,8 +65,8 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 	return shim.Error("Invalid function name for 'invoke'")
 }
 
-// Set stores the asset (both key and value) on the ledger. If the key exists,
-// it will override the value with the new one
+// saveNewEvent stores the event on the ledger. For each device
+// it will override the current state with the new one
 func (t *SimpleAsset) saveNewEvent(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	if len(args) != 17 {
 		return shim.Error("incorrect arguments. Expecting full event details")
@@ -108,7 +107,7 @@ func (t *SimpleAsset) saveNewEvent(stub shim.ChaincodeStubInterface, args []stri
 	return shim.Success([]byte(device))
 }
 
-// Get returns the value of the specified asset key
+// getEvent returns the value of the specified deviceId
 func (t *SimpleAsset) getEvent(stub shim.ChaincodeStubInterface, args []string) peer.Response {
 	var userID, jsonResp string
 	var err error
