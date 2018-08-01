@@ -168,7 +168,7 @@ def genericHandler(evt) {
     json += "]}"
     // saveNewEvent() function of chaincode is called in this request.
     def params = [
-        uri: "http://api-gw-1264758337.ap-south-1.elb.amazonaws.com/api/${httpUrl}/invoke/saveNewEvent",
+        uri: "https://api.xooa.com/api/${httpUrl}/invoke/saveNewEvent",
         headers: [
             "Authorization": "Bearer ${bearer}",
             "content-type": "application/json"
