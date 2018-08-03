@@ -166,7 +166,9 @@ def genericHandler(evt) {
     json += "\"${evt.name}\","
     json += "\"${evt.isoDate}\""
     json += "]}"
-    // saveNewEvent() function of chaincode is called in this request.
+    // saveNewEvent() function present in chaincode is called in this request. 
+    // Modify the endpoint of this URL accordingly if function name is changed
+    // Modify the json parameter sent in this request if definition of the function is changed in the chaincode
     def params = [
         uri: "https://api.xooa.com/api/${httpUrl}/invoke/saveNewEvent",
         headers: [
@@ -179,7 +181,7 @@ def genericHandler(evt) {
     try {
         httpPostJson(params)
     } catch (groovyx.net.http.HttpResponseException ex) {
-        if (ex.statusCode != 200) {
+        if (ex.statusCode != 200 && ex.statusCode != 202) {
             log.debug "Unexpected response error: ${ex.statusCode}"
             log.debug ex
             log.debug ex.response.contentType
