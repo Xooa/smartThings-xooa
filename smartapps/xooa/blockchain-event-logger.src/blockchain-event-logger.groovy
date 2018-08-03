@@ -181,7 +181,7 @@ def genericHandler(evt) {
     try {
         httpPostJson(params)
     } catch (groovyx.net.http.HttpResponseException ex) {
-        if (ex.statusCode != 200 && ex.statusCode != 202) {
+        if (ex.statusCode < 200 || ex.statusCode >= 300) {
             log.debug "Unexpected response error: ${ex.statusCode}"
             log.debug ex
             log.debug ex.response.contentType
