@@ -15,11 +15,9 @@ definition(
 	page(name: "indexPage", title: "Enter credentials", nextPage: "mainPage", uninstall: true){
     	section() {
         	input "appId", "text",
-				title: "App ID:",
-                submitOnChange: true
+				title: "App ID:"
             input "bearer", "text",
-                title: "API token:",
-                submitOnChange: true
+                title: "API token:"
         }
     }
     page(name: "mainPage", title: "Your devices", nextPage: "detailPage", install: true, uninstall: true)
