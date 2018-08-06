@@ -10,7 +10,8 @@ Xooa exposes a permanent cloud end point to smarrthings to enable cloud-to-cloud
 ## Deploy  smartthings blockchain chaincode in xooa using github integration 
 1. [optional] If you wish, fork repository from <https://github.com/Xooa/smartThings-xooa> to your Github account.
 2. Login to Xooa (create an account in xooa if needed) at <https://xooa.com/blockchain>
-3. From the main dashboard under apps, use **Deploy New** on top left corner to start the deployment process. If it is  first time you deploy a blockchain chaincode app with Xooa you will need to authorize Xooa account to your Github account (Github integration is mandatory for deploying blockchain chaincode in Xooa). Click or tap **Connect to GitHub**. follow the instructions until you successfully authorized your Xooa account to your github account.
+3. From the main dashboard under apps, use **Deploy New** on top left corner to start the deployment process. If it is  first time you deploy a blockchain chaincode app with Xooa you will need to authorize Xooa account to your Github account (Github integration is mandatory for deploying blockchain chaincode in Xooa).
+Click or tap **Connect to GitHub**. follow the instructions until you successfully authorized your Xooa account to your github account.
 ![logging](https://github.com/Xooa/smartThings-xooa/blob/7895ff951bdd4f0f4825fcda03236dc8de3e25cc/screenshots/ScreenShot_logging.png "Github logging")
 ![authorizing](https://github.com/Xooa/smartThings-xooa/blob/7895ff951bdd4f0f4825fcda03236dc8de3e25cc/screenshots/ScreenShot_authorizing.png "Github Authorizing")
 4. Enter **App Name** and **Description** for the app.  Then **Next**.
@@ -60,7 +61,6 @@ ___
 8. Enter the API Token provided in Xooa dashboard under `Identities` tab.
 9. Click or tap **Update**.
 
-The below document is currently for android devices (need to verify for iOS).
 There are 2 apps available for smartThings in google play store . We recommend the classic app over new app due to frequent glitches in new app being faced currently.
 
 ## Event Logger SmartApp Setup (Smartphone)
@@ -79,10 +79,11 @@ There are 2 apps available for smartThings in google play store . We recommend t
 
 ### SmartThings new app
 1. Tap on `automations` in lower bar.
-2. Tap on `Add`.
+2. Tap on `Add`(in android) or `+`(in IOS).
 3. If prompted, select The location you want to add the app to.
-4. You should find `Blockchain Event Logger` at the very end of the page. It may take few seconds to show up. Tap it and continue to setup.
-5. Select which devices' data you want to log into the Xooa Blockchain.
+4. Tap on `Done`(in IOS).
+5. You should find `Blockchain Event Logger` at the very end of the page. It may take few seconds to show up. Tap it and continue to setup.
+6. Select which devices' data you want to log into the Xooa Blockchain.
 
 ## Event Viewer SmartApp Setup (SmartThings IDE)
 Follow the same steps as followed for `Event Logger SmartApp Setup (SmartThings IDE)` with following exceptions:
@@ -104,11 +105,12 @@ Follow the same steps as followed for `Event Logger SmartApp Setup (SmartThings 
 
 #### SmartThings new app
 1. Tap on `automations` in lower bar.
-2. Tap on `Add`.
+2. Tap on `Add`(in android) or `+`(in IOS).
 3. If prompted, select The location you want to add the app to.
-4. You should find `Blockchain Event Viewer` at the very end of the page. It may take few seconds to show up. Tap it.
-5. Enter app Id provided in dashboard of Xooa under `Basic Information` tab.
-6. Enter the API Token provided in Xooa dashboard under `Identities` tab.
-7. Click **Next** to proceed to view devices logged with the blockchain.
-8. Click on any device to view all the past logged events of that particular device.
-9. Click on **Save** when done to store **App Id** and **API Token** for future uses.
+4. Tap on `Done`(in IOS).
+5. You should find `Blockchain Event Viewer` at the very end of the page. It may take few seconds to show up. Tap it.
+6. Enter **App Id** provided in dashboard of Xooa under `Basic Information` tab.
+7. Enter the **API Token** provided in Xooa dashboard under `Identities` tab.
+8. Click **Next** to proceed to view devices logged with the blockchain.
+9. Click on any device to view all the past logged events of that particular device.
+10. Click on **Save** when done to store **App Id** and **API Token** for future uses.
