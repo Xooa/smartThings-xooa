@@ -83,6 +83,9 @@ preferences {
     section("Log these energy meters:") {
         input "energymeters", "capability.energyMeter", multiple: true, required: false
     }
+    section("Log these locks:") {
+        input "locks", "capability.lock", multiple: true, required: false
+    }
 }
 
 def installed() {
@@ -120,6 +123,7 @@ def doSubscriptions() {
     subscribe(accelerations, "acceleration", accelerationHandler)
     subscribe(powermeters, "power", powerHandler)
     subscribe(energymeters, "energy", energyHandler)
+    subscribe(locks, "lock", lockHandler)
 }
 
 def genericHandler(evt) {
@@ -255,4 +259,8 @@ def powerHandler(evt) {
 
 def energyHandler(evt) {
     genericHandler(evt)
+}
+
+def lockHandler(evt) {
+	genericHandler(evt)
 }
