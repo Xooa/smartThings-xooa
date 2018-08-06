@@ -12,8 +12,8 @@ Xooa exposes a permanent cloud end point to smarrthings to enable cloud-to-cloud
 2. Login to Xooa (create an account in xooa if needed) at <https://xooa.com/blockchain>
 3. From the main dashboard under apps, use **Deploy New** on top left corner to start the deployment process. If it is  first time you deploy a blockchain chaincode app with Xooa you will need to authorize Xooa account to your Github account (Github integration is mandatory for deploying blockchain chaincode in Xooa).
 Click or tap **Connect to GitHub**. follow the instructions until you successfully authorized your Xooa account to your github account.
-![logging](https://github.com/Xooa/smartThings-xooa/blob/7895ff951bdd4f0f4825fcda03236dc8de3e25cc/screenshots/ScreenShot_logging.png "Github logging")
-![authorizing](https://github.com/Xooa/smartThings-xooa/blob/7895ff951bdd4f0f4825fcda03236dc8de3e25cc/screenshots/ScreenShot_authorizing.png "Github Authorizing")
+![logging](https://github.com/Xooa/smartThings-xooa/blob/aa7a46efde038f15ad55cda8f606d9460b7c2ee4/screenshots/ScreenShot_logging.png "Github logging")
+![authorizing](https://github.com/Xooa/smartThings-xooa/blob/aa7a46efde038f15ad55cda8f606d9460b7c2ee4/screenshots/ScreenShot_authorizing.jpg "Github Authorizing")
 4. Enter **App Name** and **Description** for the app.  Then **Next**.
 5. Search for **smartThings-xooa** repo, or if you forked under a different name use that name. A list of repositories matching the search criteria are shown. Select the repo the, then **Next**.
 6. The next step is deployment details. Select **master** as the branch and **smartThings-xooa** as the chaincode from the dropdown available. Then **Deploy**.
@@ -56,12 +56,12 @@ ___
 4. Select on the smartApp you just deployed.
 5. Navigate to **App Settings**.
 6. Navigate to **Settings** option.
-![appsettings](https://github.com/Xooa/smartThings-xooa/blob/7895ff951bdd4f0f4825fcda03236dc8de3e25cc/screenshots/ScreenShot_appSettings.png "App Settings")
+![appsettings](https://github.com/Xooa/smartThings-xooa/blob/aa7a46efde038f15ad55cda8f606d9460b7c2ee4/screenshots/ScreenShot_appSettings.png "App Settings")
 7. Enter app Id provided in dashboard of Xooa under `Basic Information` tab.
 8. Enter the API Token provided in Xooa dashboard under `Identities` tab.
 9. Click or tap **Update**.
 
-There are 2 apps available for smartThings in google play store . We recommend the classic app over new app due to frequent glitches in new app being faced currently.
+There are 2 apps available for smartThings in google play store . We recommend the classic app over the new app due to frequent glitches in the new app being faced currently.
 
 ## Event Logger SmartApp Setup (Smartphone)
 1. Make sure you have smartThings app installed on your phone with at least 1 location and 1 device defined.
@@ -101,7 +101,7 @@ Follow the same steps as followed for `Event Logger SmartApp Setup (SmartThings 
 7. Enter the **API Token** provided in Xooa dashboard under `Identities` tab.
 8. Click **Next** to proceed to view devices logged with the blockchain.
 9. Click on any device to view all the past logged events of that particular device.
-10. Click on **Save** when done to store **App Id** and **API Token** for future uses.
+10. Click on **Save** when done to store **App Id** and **API Token** with smartApp for future uses.
 
 #### SmartThings new app
 1. Tap on `automations` in lower bar.
@@ -113,4 +113,4 @@ Follow the same steps as followed for `Event Logger SmartApp Setup (SmartThings 
 7. Enter the **API Token** provided in Xooa dashboard under `Identities` tab.
 8. Click **Next** to proceed to view devices logged with the blockchain.
 9. Click on any device to view all the past logged events of that particular device.
-10. Click on **Save** when done to store **App Id** and **API Token** for future uses.
+10. Click on **Save** when done to store **App Id** and **API Token** with smartApp for future uses.
