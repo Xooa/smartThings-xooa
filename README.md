@@ -12,8 +12,8 @@ Xooa exposes a permanent cloud end point to smarrthings to enable cloud-to-cloud
 2. Login to Xooa (create an account in xooa if needed) at <https://xooa.com/blockchain>
 3. From the main dashboard under apps, use **Deploy New** on top left corner to start the deployment process. If it is  first time you deploy a blockchain chaincode app with Xooa you will need to authorize Xooa account to your Github account (Github integration is mandatory for deploying blockchain chaincode in Xooa).
 Click or tap **Connect to GitHub**. follow the instructions until you successfully authorized your Xooa account to your github account.
-![logging](https://github.com/Xooa/smartThings-xooa/blob/aa7a46efde038f15ad55cda8f606d9460b7c2ee4/screenshots/ScreenShot_logging.png | width=200 "Github logging")
-![authorizing](https://github.com/Xooa/smartThings-xooa/blob/aa7a46efde038f15ad55cda8f606d9460b7c2ee4/screenshots/ScreenShot_authorizing.jpg | width=200 "Github Authorizing")
+![logging](https://github.com/Xooa/smartThings-xooa/blob/aa7a46efde038f15ad55cda8f606d9460b7c2ee4/screenshots/ScreenShot_logging.png | width=200)
+![authorizing](https://github.com/Xooa/smartThings-xooa/blob/aa7a46efde038f15ad55cda8f606d9460b7c2ee4/screenshots/ScreenShot_authorizing.jpg | width=200)
 4. Enter **App Name** and **Description** for the app.  Then **Next**.
 5. Search for **smartThings-xooa** repo, or if you forked under a different name use that name. A list of repositories matching the search criteria are shown. Select the repo the, then **Next**.
 6. The next step is deployment details. Select **master** as the branch and **smartThings-xooa** as the chaincode from the dropdown available. Then **Deploy**.
