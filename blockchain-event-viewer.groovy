@@ -30,33 +30,30 @@ def mainPage() {
             paragraph "Click on the devices to view full details"
             def appId = settings.appId
             def bearer = settings.bearer
-            def json = "{\"args\":["
-            json += "]}"
+            // getDeviceLastEvent() function present in chaincode is called in this request. 
+            // Modify the endpoint of this URL accordingly if function name is changed
+            // Modify the json parameter sent in this request if definition of the function is changed in the chaincode
             def params = [
-                uri: "https://api.xooa.com/api/${appId}/invoke/getDeviceLastEvent",
+                uri: "https://api.xooa.com/api/${appId}/query/getDeviceLastEvent?args=%5B%5D",
                 headers: [
                     "Authorization": "Bearer ${bearer}",
-                    "content-type": "application/json",
                     "accept": "application/json"
-                ],
-                body: json
+                ]
             ]
-            // log.debug(params)
             try {
-                httpPostJson(params) { resp ->
-                    // log.debug "response data: ${parseJson(resp.data.payload)[0].Record}"
-                    for(device in parseJson(resp.data.payload)) {
-                    	log.debug(device)
+                httpGet(params) { resp ->
+                    for(device in resp.data) {
                         def hrefParams = [
                             deviceId: "${device.DeviceId}",
                             name: "${device.Record.displayName}"
                         ]
-                        log.debug hrefParams
+                        device.Record.time = device.Record.time.replaceAll('t',' ')
+                        def time = device.Record.time.take(19)
                         href(name: "toDetailsPage",
                             title: "${device.Record.displayName} - ${device.Record.value}",
+                            description: "Last updated at: ${time}",
                             params: hrefParams,
                             page: "detailPage")
-                        // paragraph "${device.Record.displayName}-${device.Record.value}"
                     }
                 }
             } catch (groovyx.net.http.HttpResponseException ex) {
@@ -78,32 +75,26 @@ def detailPage(params1) {
         section("${params1?.name}") {
             def appId = settings.appId
             def bearer = settings.bearer
-            def json = "{\"args\":[\""
-            json += params1?.deviceId
-            json += "\"]}"
+            def json = "%5B%22${params1?.deviceId}%22%5D"
+            // getHistoryForDevice() function present in chaincode is called in this request. 
+            // Modify the endpoint of this URL accordingly if function name is changed
+            // Modify the json parameter sent in this request if definition of the function is changed in the chaincode
             def paramaters = [
-                uri: "https://api.xooa.com/api/${appId}/invoke/getHistoryForDevice",
+                uri: "https://api.xooa.com/api/${appId}/query/getHistoryForDevice?args=${json}",
                 headers: [
                     "Authorization": "Bearer ${bearer}",
-                    "content-type": "application/json",
                     "accept": "application/json"
-                ],
-                body: json
+                ]
             ]
-            log.debug "did ${params1?.deviceId}"
+            log.debug "did: ${params1?.deviceId}"
             if(params1?.deviceId != null) {
-            	log.debug paramaters 
                 try {
-                    httpPostJson(paramaters) { resp ->
-                        log.debug "response data: ${resp.data}"
-                        if(resp.data.payload){
-                            def payload1 = parseJson(resp.data.payload)
-                            for(transaction in payload1) {
-                                log.debug(transaction)
+                    httpGet(paramaters) { resp ->
+                        if(resp.data){
+                            resp.data = resp.data.reverse()
+                            for(transaction in resp.data) {
                                 transaction.Record.time = transaction.Record.time.replaceAll('t',' ')
-                                log.debug transaction.Record.time
                                 def time = transaction.Record.time.take(19)
-                                log.debug time
                                 paragraph "${time} - ${transaction.Record.value}"
                             }
                         }
@@ -130,10 +121,4 @@ def updated() {
 }
 def initialize() {
     log.debug "Initialized"
-}
-def history() {
-    log.debug "history"
-    section("Log these presence sensors:") {
-        input "presences", "capability.presenceSensor", multiple: true, required: false
-    }
 }
