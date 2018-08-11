@@ -1,3 +1,13 @@
+# This is a configuration file used by Xooa platform to configure and deploy chaincodes.
+# Each level of indentation specifies parameters for the previous level. The format of entries
+# are as below. This file should be in the root directory of the Repo.
+#
+# Name :                  -> Name of the App in Xooa Platform [Optional Paramater]
+# AppInfo :               -> Description of the App in Xooa Platform [Optional Parameter]
+# chaincodes:
+#   <chaincode-name>:     -> Name of the chaincode to be installed on Xooa platform here.
+#     path:               -> Path to the chaincode directory w.r.t Repo root.
+#     language:           -> Language of chaincode source code. Options are node, go, composer (for Fabric Composer Apps)
 chaincodes:
   smartthings:
     path: /Chaincode/
