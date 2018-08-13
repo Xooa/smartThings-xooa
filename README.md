@@ -1,5 +1,5 @@
 
-This page provides a step-by-step tutorial to integrate blockchain SmartApps with xooa's blockchain-as-a-service (BaaS).
+This page provides a step-by-step tutorial to integrate a blockchain SmartApp with xooa's blockchain-as-a-service (BaaS).
 
 The repository used in this example is <https://github.com/Xooa/smartThings-xooa>
 
@@ -71,25 +71,22 @@ You now need to publish the app.  You can do this with or without GitHub integra
 
 **With GitHub integration** (if you haven't already set up GitHub to work with SmartThings, here is the community FAQ on the subject <https://community.SmartThings.com/t/faq-github-integration-how-to-add-and-update-from-repositories/39046>)
 
-*
-
- 1. Still under SmartApps tab, select **Settings**.   
- 2. Select **Add new repository**.
- 3.  Add the GitHub repo to your IDE with the following parameters:
-        
-        * Owner: xooa
-        * Name: SmartThings-xooa
-        * Branch: master
- 4. Click **Save**.
- 5. Click **Update from Repo**.
- 6. Click **SmartThings-xooa (master)**.
- 7. Select **blockchain-event-logger.groovy** from **New(only in GitHub)** column.
- 8.  Select **Publish**.
- 9.  Click  **Execute Update**.
+1. Still under SmartApps tab, select **Settings**.   
+2. Select **Add new repository**.
+3.  Add the GitHub repo to your IDE with the following parameters:
+    * `Owner`: xooa
+    * `Name`: SmartThings-xooa
+    * `Branch`: master
+4. Click **Save**.
+5. Click **Update from Repo**.
+6. Click **SmartThings-xooa (master)**.
+7. Select **blockchain-event-logger.groovy** from the **New (only in GitHub)** column.
+8.  Select **Publish**.
+9.  Click  **Execute Update**.
 
 ### Event Logger SmartApp Configuration (still at SmartThings IDE)
 
-1. Select  the SmartApp you just deployed.
+1. Select the SmartApp you just deployed.
 
 5. Navigate to **App Settings**.
 
