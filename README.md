@@ -12,17 +12,17 @@ Xooa exposes a permanent cloud end-point to smarrthings to enable cloud-to-cloud
 2. Log in to your xooa account at <https://xooa.com/blockchain>
 3. Click **apps**, then **Deploy New** on. 
 If this is your first time deploy a chaincode app with xooa, you will need to authorize xooa with your Github account.
-Click **Connect to GitHub**. Follow the onscreen instructions to complete the authorization process.
+4. Click **Connect to GitHub**. Follow the onscreen instructions to complete the authorization process.
 <img src="https://github.com/Xooa/smartThings-xooa/blob/aa7a46efde038f15ad55cda8f606d9460b7c2ee4/screenshots/ScreenShot_logging.png" alt="github logging" width="500px"/>
 <img src="https://github.com/Xooa/smartThings-xooa/blob/aa7a46efde038f15ad55cda8f606d9460b7c2ee4/screenshots/ScreenShot_authorizing.jpg" alt="github authorizing" width="500px"/>
-4. Enter a name and description for your app, and then click **Next**.
-5. Search for the **smartThings-xooa** repo, or your fork of that repo. A list of repositories matching the search criteria are shown. Select the repo, and then click **Next**.
-The deployment details appear.
-6. Select **master**  branch and **smartThings-xooa** as the chaincode from the dropdown available, then click **Deploy**.
-7. Relax while Xooa does the blockchain heavy lifting for you. You will be redirected to app dashboard when the deployment completes.
-8. Copy the **App ID** from the dashboard under `Basic Information` tab. You will need it later to connect the smartapp.
-9. From the app dashboard, navigate to the **Identities** tab.
-10. For the available identity, click **Show API token** and copy the token value. You need this token to authorize API requests to the **smartApp**.
+5. Enter a name and description for your app, and then click **Next**.
+
+6. Search for the **smartThings-xooa** repo, or your fork of that repo. A list of repositories matching the search criteria are shown. Select the repo, and then click **Next**.The deployment details appear.
+7. Select **master**  branch and **smartThings-xooa** as the chaincode from the dropdown available, then click **Deploy**.
+8. Relax while Xooa does the blockchain heavy lifting for you. You will be redirected to app dashboard when the deployment completes.
+9. Copy the **App ID** from the dashboard under `Basic Information` tab. You will need it later to connect the smartapp.
+10. From the app dashboard, navigate to the **Identities** tab.
+11. For the available identity, click **Show API token** and copy the token value. You need this token to authorize API requests to the **smartApp**.
 
 ___
 
