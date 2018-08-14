@@ -35,7 +35,7 @@ Before you begin you may want to fork the [SmartThings-xooa](https://github.com/
 
 9. Relax while Xooa does the blockchain heavy lifting for you. You will be redirected to app dashboard when the deployment completes.
 
-10. Copy the **App ID** from the `Basic Information` tab on the Apps dashboard. You will need this ID later to connect the SmartApp.
+10. Copy the **Xooa app ID** from the `Basic Information` tab on the Apps dashboard. You will need this ID later to connect the SmartApp.
 
 11. From the Apps dashboard, navigate to the **Identities** tab.
 
@@ -84,21 +84,6 @@ You now need to publish the app.  You can do this with or without GitHub integra
 8.  Select **Publish**.
 9.  Click  **Execute Update**.
 
-### Event Logger SmartApp Configuration (still at SmartThings IDE)
-
-1. Select the SmartApp you just deployed.
-
-5. Navigate to **App Settings**.
-
-6. Navigate to **Settings** option.
-
-![appsettings](https://github.com/Xooa/smartThings-xooa/blob/aa7a46efde038f15ad55cda8f606d9460b7c2ee4/screenshots/ScreenShot_appSettings.png "App Settings")
-
-7. Enter app ID provided in dashboard of xooa under `Basic Information` tab.
-
-8. Enter the API Token provided in xooa dashboard under `Identities` tab.
-
-9. Click **Update**.
 
 There are two apps available for SmartThings in the Google Play store. We recommend the classic app over the new app.
 
@@ -124,7 +109,11 @@ There are two apps available for SmartThings in the Google Play store. We recomm
 
 6. Select the devices you want to log in the xooa blockchain.
 
-7. Click **Save**
+7. Scroll down and enter the **Xooa app ID** provided in the xooa dashboard under `Basic Information`.
+
+8. Enter the **Xooa participant API token** provided in xooa dashboard under `Identities`.
+
+9. Click **Save**
 
 ### SmartThings New App
 
@@ -140,7 +129,11 @@ There are two apps available for SmartThings in the Google Play store. We recomm
 
 6. Tap it to continue setting it up.
 
-6. Select which devices you want to log in the xooa blockchain.
+7. Select which devices you want to log in the xooa blockchain.
+
+8. Scroll down and enter the **Xooa app ID** provided in the xooa dashboard under `Basic Information`.
+
+9. Enter the **Xooa participant API token** provided in xooa dashboard under `Identities`.
 
 ## Event Viewer SmartApp Setup (SmartThings IDE)
 
@@ -164,15 +157,15 @@ Follow the same steps as `Event Logger SmartApp Setup (SmartThings IDE)` but:
 
 5. Find `Blockchain Event Viewer` and tap it.
 
-6. Enter the **App ID** provided in the xooa dashboard under `Basic Information`.
+6. Enter the **Xooa app ID** provided in the xooa dashboard under `Basic Information`.
 
-7. Enter the **API Token** provided in the xooa dashboard under `Identities`.
+7. Enter the **Xooa participant API token** provided in the xooa dashboard under `Identities`.
 
 8. Click **Next** to proceed to view the devices logging to the blockchain.
 
 9. Click any device to view all the past logged events for that device.
 
-10. Click **Save** to store **App ID** and **API Token** with SmartApp for future uses.
+10. Click **Save** to store **Xooa app ID** and **API Token** with SmartApp for future uses.
 
 #### SmartThings new app
 
@@ -188,12 +181,14 @@ Follow the same steps as `Event Logger SmartApp Setup (SmartThings IDE)` but:
 
 6. Tap the app.
 
-6. Enter the **App ID** provided in the xooa dashboard under `Basic Information`.
+6. Enter the **Xooa app ID** provided in the xooa dashboard under `Basic Information`.
 
-7. Enter the **API Token** provided in xooa dashboard under `Identities`.
+7. Enter the **Xooa participant API token** provided in xooa dashboard under `Identities`.
 
 8. Click **Next** to proceed to view devices logging to the blockchain.
 
-9. Click on any device to view all the past logged events for that device.
+9. Click on any device to view the past logged events for that device.
 
-10. Click **Save** to store the **App ID** and **API Token** with SmartApp for future uses.
+10. Input the date for which you want to view the past logged events.(Latest logged date is preset)
+
+11. Click **Save** to store the **Xooa app ID** and **API Token** with SmartApp for future uses.
