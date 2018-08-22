@@ -29,7 +29,6 @@ import (
 	"bytes"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/protos/peer"
@@ -54,12 +53,10 @@ func (t *SimpleAsset) Invoke(stub shim.ChaincodeStubInterface) peer.Response {
 
 	if function == "saveNewEvent" {
 		return t.saveNewEvent(stub, args)
-	} else if function == "getDeviceLastEvent" {
-		return t.getDeviceLastEvent(stub)
-	} else if function == "getHistoryForDevice" {
-		return t.getHistoryForDevice(stub, args)
-	} else if function == "getEvent" {
-		return t.getEvent(stub, args)
+	} else if function == "queryByDate" {
+		return t.queryByDate(stub, args)
+	} else if function == "queryLocation" {
+		return t.queryLocation(stub, args)
 	}
 
 	return shim.Error("Invalid function name for 'invoke'")
@@ -89,6 +86,8 @@ func (t *SimpleAsset) saveNewEvent(stub shim.ChaincodeStubInterface, args []stri
 	value := strings.ToLower(args[14])
 	name := strings.ToLower(args[15])
 	time := strings.ToLower(args[16])
+	date := strings.Replace(time, "-", "", -1)
+	date = strings.Split(date, "t")[0]
 
 	//Building the event json string manually without struct marshalling
 	eventJSONasString := `{"docType":"Event",  "displayName": "` + displayName + `",
@@ -97,118 +96,27 @@ func (t *SimpleAsset) saveNewEvent(stub shim.ChaincodeStubInterface, args []stri
 	 "descriptionText": "` + descriptionText + `", "installedSmartAppId": "` + installedSmartAppID + `",
 	 "isDigital": "` + isDigital + `", "isPhysical": "` + isPhysical + `", "deviceId": "` + deviceID + `",
 	 "location": "` + location + `", "locationId": "` + locationID + `", "source": "` + source + `",
-	 "unit": "` + unit + `", "value": "` + value + `", "name": "` + name + `", "time": "` + time + `"}`
+	 "unit": "` + unit + `", "value": "` + value + `", "name": "` + name + `", "time": "` + time + `", "date": "` + date + `"}`
 	eventJSONasBytes := []byte(eventJSONasString)
 
-	err1 := stub.PutState(deviceID, eventJSONasBytes)
-	if err1 != nil {
+	eventLessArgsString := `{"docType":"EventLess",  "displayName": "` + displayName + `", "value": "` + value + `",
+	 "time": "` + time + `", "locationId": "` + locationID + `"}`
+	eventLessArgs := []byte(eventLessArgsString)
+	err := stub.PutState(deviceID, eventLessArgs)
+	if err != nil {
+		return shim.Error("Failed to set asset")
+	}
+
+	arr := []string{deviceID, time}
+	myCompositeKey, err := stub.CreateCompositeKey("combined", arr)
+	if err != nil {
+		return shim.Error("Failed to set composite key")
+	}
+	err = stub.PutState(myCompositeKey, eventJSONasBytes)
+	if err != nil {
 		return shim.Error("Failed to set asset")
 	}
 	return shim.Success([]byte(device))
-}
-
-// getEvent returns the value of the specified deviceId
-func (t *SimpleAsset) getEvent(stub shim.ChaincodeStubInterface, args []string) peer.Response {
-	var userID, jsonResp string
-	var err error
-
-	if len(args) != 1 {
-		return shim.Error("Incorrect arguments. Expecting a key")
-	}
-
-	valueAsBytes, err := stub.GetState(args[0])
-	if err != nil {
-		jsonResp = "{\"Error\":\"Failed to get state for " + userID + "\"}"
-		return shim.Error(jsonResp)
-	}
-	if valueAsBytes == nil {
-		jsonResp = "{\"Error\":\"Transaction does not exist: " + userID + "\"}"
-		return shim.Error(jsonResp)
-	}
-	return shim.Success(valueAsBytes)
-}
-
-// Gets the last transactions for all unique keys i.e., all devices
-func (t *SimpleAsset) getDeviceLastEvent(stub shim.ChaincodeStubInterface) peer.Response {
-	resultsIterator, err := stub.GetStateByRange("", "")
-	if err != nil {
-		return shim.Error("Failed to get data " + err.Error())
-	}
-	defer resultsIterator.Close()
-
-	var buffer bytes.Buffer
-	buffer.WriteString("[")
-
-	bArrayMemberAlreadyWritten := false
-
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-
-		if bArrayMemberAlreadyWritten == true {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString("{\"DeviceId\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.Key)
-		buffer.WriteString("\"")
-
-		buffer.WriteString(", \"Record\":")
-		buffer.WriteString(string(queryResponse.Value))
-		buffer.WriteString("}")
-		bArrayMemberAlreadyWritten = true
-	}
-	buffer.WriteString("]")
-
-	return shim.Success(buffer.Bytes())
-}
-
-// For a given device, return its historical data
-func (t *SimpleAsset) getHistoryForDevice(stub shim.ChaincodeStubInterface, args []string) peer.Response {
-	if len(args) != 1 {
-		return shim.Error("Expected argument lenght doesnt match")
-	}
-
-	resultsIterator, err := stub.GetHistoryForKey(args[0])
-	if err != nil {
-		return shim.Error("Failed to get data " + err.Error())
-	}
-	defer resultsIterator.Close()
-
-	var buffer bytes.Buffer
-	buffer.WriteString("[")
-
-	bArrayMemberAlreadyWritten := false
-
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-		if err != nil {
-			return shim.Error(err.Error())
-		}
-
-		if bArrayMemberAlreadyWritten == true {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString("{\"TxId\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.TxId)
-		buffer.WriteString("\"")
-
-		buffer.WriteString(", \"Timestamp\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(time.Unix(queryResponse.Timestamp.Seconds, int64(queryResponse.Timestamp.Nanos)).String())
-		buffer.WriteString("\"")
-
-		buffer.WriteString(", \"Record\":")
-		buffer.WriteString(string(queryResponse.Value))
-		buffer.WriteString("}")
-		bArrayMemberAlreadyWritten = true
-	}
-	buffer.WriteString("]")
-
-	return shim.Success(buffer.Bytes())
 }
 
 // main function starts up the chaincode in the container during instantiate
@@ -216,4 +124,93 @@ func main() {
 	if err := shim.Start(new(SimpleAsset)); err != nil {
 		fmt.Printf("Error starting SimpleAsset chaincode: %s", err)
 	}
+}
+
+// getQueryResultForQueryString retrieves the data from couchdb
+// for rich queries passed as a string
+func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString string) ([]byte, error) {
+
+	fmt.Printf("- getQueryResultForQueryString queryString:\n%s\n", queryString)
+
+	resultsIterator, err := stub.GetQueryResult(queryString)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	// buffer is a JSON array containing QueryRecords
+	var buffer bytes.Buffer
+	buffer.WriteString("[")
+
+	bArrayMemberAlreadyWritten := false
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+		// Add a comma before array members, suppress it for the first array member
+		if bArrayMemberAlreadyWritten == true {
+			buffer.WriteString(",")
+		}
+		buffer.WriteString("{\"Key\":")
+		buffer.WriteString("\"")
+		buffer.WriteString(queryResponse.Key)
+		buffer.WriteString("\"")
+
+		buffer.WriteString(", \"Record\":")
+		// Record is a JSON object, so we write as-is
+		buffer.WriteString(string(queryResponse.Value))
+		buffer.WriteString("}")
+		bArrayMemberAlreadyWritten = true
+	}
+	buffer.WriteString("]")
+
+	fmt.Printf("- getQueryResultForQueryString queryResult:\n%s\n", buffer.String())
+
+	return buffer.Bytes(), nil
+}
+
+// queryLocation creates a rich query to query the location using locationId.
+// It retrieve all the devices and their last states for that location.
+func (t *SimpleAsset) queryLocation(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+
+	if len(args) < 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	locationId := args[0]
+
+	queryString := fmt.Sprintf("{\r\n    \"selector\": {\r\n        \"docType\": \"EventLess\",\r\n        \"locationId\": \"%s\"\r\n    },\r\n    \"fields\": [\"displayName\", \"value\",\"time\"]\r\n}", locationId)
+
+	queryResults, err := getQueryResultForQueryString(stub, queryString)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(queryResults)
+}
+
+// queryByDate creates a rich query to query using locationId, deviceId and date.
+// It retrieves all the history of the device for a particular date.
+func (t *SimpleAsset) queryByDate(stub shim.ChaincodeStubInterface, args []string) peer.Response {
+
+	if len(args) < 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 3")
+	}
+
+	locationId := args[0]
+	deviceId := args[1]
+	date := args[2]
+	queryString := fmt.Sprintf("{\r\n    \"selector\": {\r\n        \"docType\": \"Event\",\r\n        \"locationId\": \"%s\",\r\n        \"deviceId\": \"%s\",\r\n        \"date\": \"%s\"\r\n    },\r\n    \"fields\": [\"value\",\"time\"]\r\n}", locationId, deviceId, date)
+
+	queryResults, err := getQueryResultForQueryString(stub, queryString)
+	queryResultsString := strings.Replace(string(queryResults), "\u0000", "||", -1)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	queryResults = []byte(queryResultsString)
+	return shim.Success(queryResults)
 }
