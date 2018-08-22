@@ -53,6 +53,7 @@ def mainPage() {
             ]
             try {
                 httpGet(params) { resp ->
+                	log.debug resp.data
                 	if(resp.data.size()){
             			paragraph "Click on the devices to view full details"
                         for(device in resp.data) {
@@ -94,6 +95,8 @@ def datePage(params1) {
         section() {
             if(params1?.date != null) {
             	def date = params1?.date
+                state.deviceName = params1?.name
+                state.deviceId = params1?.deviceId
             	date = date.split("-")
                 app.updateSetting("day", date[2])
                 app.updateSetting("month", date[1])
@@ -115,41 +118,45 @@ def detailPage() {
     dynamicPage(name: "detailPage") {
         section("${state.deviceName}") {
             log.debug "did: ${state.deviceId}"
-            def appId = settings.appId
-            def apiToken = settings.apiToken
-            def date = Date.parse("yyyy-MM-dd'T'HH:mm:ss", "${settings.year}-${settings.month}-${settings.day}T00:00:00").format("yyyyMMdd")
-            def json = "%5B%22${settings.locationid}%22,%22${state.deviceId}%22,%22${date}%22%5D"
-            // queryByDate() function present in chaincode is called in this request. 
-            // Modify the endpoint of this URL accordingly if function name is changed
-            // Modify the json parameter sent in this request if definition of the function is changed in the chaincode
-            def paramaters = [
-                uri: "https://api.xooa.com/api/${appId}/query/queryByDate?args=${json}",
-                headers: [
-                    "Authorization": "Bearer ${apiToken}",
-                    "accept": "application/json"
+            if(state.deviceId != null) {
+                def appId = settings.appId
+                def apiToken = settings.apiToken
+                def date = Date.parse("yyyy-MM-dd'T'HH:mm:ss", "${settings.year}-${settings.month}-${settings.day}T00:00:00").format("yyyyMMdd")
+                def json = "%5B%22${settings.locationid}%22,%22${state.deviceId}%22,%22${date}%22%5D"
+                // queryByDate() function present in chaincode is called in this request. 
+                // Modify the endpoint of this URL accordingly if function name is changed
+                // Modify the json parameter sent in this request if definition of the function is changed in the chaincode
+                def paramaters = [
+                    uri: "https://api.xooa.com/api/${appId}/query/queryByDate?args=${json}",
+                    headers: [
+                        "Authorization": "Bearer ${apiToken}",
+                        "accept": "application/json"
+                    ]
                 ]
-            ]
-            try {
-                httpGet(paramaters) { resp ->
-                	log.debug resp.data
-                    if(resp.data.size()){
-                        resp.data = resp.data.reverse()
-                        for(transaction in resp.data) {
-                            transaction.Record.time = transaction.Record.time.replaceAll('t',' ')
-                            def time = transaction.Record.time.take(19)
-                            paragraph "${time} - ${transaction.Record.value}"
+                try {
+                    httpGet(paramaters) { resp ->
+                        log.debug resp.data
+                        if(resp.data.size()){
+                            resp.data = resp.data.reverse()
+                            for(transaction in resp.data) {
+                                transaction.Record.time = transaction.Record.time.replaceAll('t',' ')
+                                def time = transaction.Record.time.take(19)
+                                paragraph "${time} - ${transaction.Record.value}"
+                            }
+                        } else {
+                            paragraph "No events found for the selected date."
                         }
-                    } else {
-                    	paragraph "No events found for this device and date."
+                    }
+                } catch (groovyx.net.http.HttpResponseException ex) {
+                    if (ex.statusCode < 200 || ex.statusCode >= 300) {
+                        log.debug "Unexpected response error: ${ex.statusCode}"
+                        log.debug ex.response
+                        log.debug ex.response.contentType
                     }
                 }
-            } catch (groovyx.net.http.HttpResponseException ex) {
-                if (ex.statusCode < 200 || ex.statusCode >= 300) {
-                    log.debug "Unexpected response error: ${ex.statusCode}"
-                    log.debug ex.response
-                    log.debug ex.response.contentType
-                }
-            }
+           	} else {
+            	paragraph "Unable to retrieve device ID"
+			}
         }
     }
 }
