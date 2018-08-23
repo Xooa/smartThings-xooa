@@ -86,6 +86,12 @@ preferences {
     section("Log these locks:") {
         input "locks", "capability.lock", multiple: true, required: false
     }
+    section() {
+        input "appId", "text",
+            title: "Xooa app ID:", submitOnChange: true
+        input "apiToken", "text",
+            title: "Xooa Participant API token:", submitOnChange: true
+    }
 }
 
 def installed() {
@@ -127,8 +133,8 @@ def doSubscriptions() {
 }
 
 def genericHandler(evt) {
-	def httpUrl = appSettings.appId // appId will constitute the URL request.
-    def bearer = appSettings.apiToken // bearer will be passed in header as authorisation for the request to Xooa blockchain platform
+	def httpUrl = settings.appId // appId will constitute the URL request.
+    def bearer = settings.apiToken // bearer will be passed in header as authorisation for the request to Xooa blockchain platform
 /*
     log.debug("------------------------------")
     log.debug("date: ${evt.date}")
