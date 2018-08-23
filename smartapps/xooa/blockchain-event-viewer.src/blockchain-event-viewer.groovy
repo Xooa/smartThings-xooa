@@ -11,55 +11,75 @@ definition(
         appSetting "apiToken"
     }
  preferences {
- 	
-	page(name: "indexPage", title: "Enter credentials", nextPage: "mainPage", uninstall: true){
+	page(name: "indexPage", title: "Enter credentials", nextPage: "mainPage", uninstall: true)
+    page(name: "mainPage", title: "Your devices", nextPage: "datePage", install: true)
+    page(name: "datePage", title: "Select the date", nextPage: "detailPage")
+    page(name: "detailPage", title: "Past Event Details", install: true)
+}
+
+def indexPage() {
+    dynamicPage(name: "indexPage") {
+    	app.updateSetting("Lid", location.id)
     	section() {
-        	input "appId", "text",
-				title: "App ID:"
-            input "bearer", "text",
-                title: "API token:"
+            input "appId", "text",
+                title: "Xooa app ID:", submitOnChange: true
+            input "apiToken", "text",
+                title: "Xooa Participant API token:", submitOnChange: true
+            input "locationid", "text",
+                title: "Location ID:", submitOnChange: true, defaultValue: location.id
+            paragraph "You can share your location id with another user to share events of your devices."
+            input "Lid", "text",
+                title: "Your Location ID:", defaultValue: location.id
         }
     }
-    page(name: "mainPage", title: "Your devices", nextPage: "detailPage", install: true, uninstall: true)
-    page(name: "detailPage", title: "Past Event Details", install: true, uninstall: true)
 }
+
 def mainPage() {
     dynamicPage(name: "mainPage") {
         section() {
-        	log.debug "got with settings: ${settings}"
-            paragraph "Click on the devices to view full details"
+        	log.debug "settings: ${settings}"
             def appId = settings.appId
-            def bearer = settings.bearer
-            // getDeviceLastEvent() function present in chaincode is called in this request. 
+            def apiToken = settings.apiToken
+            // queryLocation() function present in chaincode is called in this request. 
             // Modify the endpoint of this URL accordingly if function name is changed
-            // Modify the json parameter sent in this request if definition of the function is changed in the chaincode
             def params = [
-                uri: "https://api.xooa.com/api/${appId}/query/getDeviceLastEvent?args=%5B%5D",
+                uri: "https://api.xooa.com/api/${appId}/query/queryLocation?args=%5B%22${settings.locationid}%22%5D",
                 headers: [
-                    "Authorization": "Bearer ${bearer}",
-                    "accept": "application/json"
+                    "Authorization": "Bearer ${apiToken}",
+                    "accept": "text/html",
+                    "requestContentType": "text/html",
+                    "contentType": "text/html"
                 ]
             ]
             try {
                 httpGet(params) { resp ->
-                    for(device in resp.data) {
-                        def hrefParams = [
-                            deviceId: "${device.DeviceId}",
-                            name: "${device.Record.displayName}"
-                        ]
-                        device.Record.time = device.Record.time.replaceAll('t',' ')
-                        def time = device.Record.time.take(19)
-                        href(name: "toDetailsPage",
-                            title: "${device.Record.displayName} - ${device.Record.value}",
-                            description: "Last updated at: ${time}",
-                            params: hrefParams,
-                            page: "detailPage")
+                	log.debug resp.data
+                	if(resp.data.size()){
+            			paragraph "Click on the devices to view full details"
+                        for(device in resp.data) {
+                            device.Record.time = device.Record.time.replaceAll('t',' ')
+                            def time = device.Record.time.take(19)
+                            def date = device.Record.time.take(10)
+                            def hrefParams = [
+                                deviceId: "${device.Key}",
+                                name: "${device.Record.displayName}",
+                                date: "${date}"
+                            ]
+                            href(name: "toDatePage",
+                                title: "${device.Record.displayName} - ${device.Record.value}",
+                                description: "Last updated at: ${time}",
+                                params: hrefParams,
+                                page: "datePage")
+                        }
+                 	} else {
+                    	paragraph "No devices found."
                     }
                 }
             } catch (groovyx.net.http.HttpResponseException ex) {
-                if (ex.statusCode < 200 || ex.statusCode >= 300) {
+               	if (ex.statusCode < 200 || ex.statusCode >= 300) {
                     log.debug "Unexpected response error: ${ex.statusCode}"
                     log.debug ex
+                    log.debug ex.response.data
                     log.debug ex.response.contentType
                 }
             }
@@ -69,34 +89,62 @@ def mainPage() {
     }
 }
 
-def detailPage(params1) {
-    log.debug "params: ${params1}"
+def datePage(params1) {
+	log.debug "params1: ${params1}"
+    dynamicPage(name: "datePage") {
+        section() {
+            if(params1?.date != null) {
+            	def date = params1?.date
+                state.deviceName = params1?.name
+                state.deviceId = params1?.deviceId
+            	date = date.split("-")
+                app.updateSetting("day", date[2])
+                app.updateSetting("month", date[1])
+                app.updateSetting("year", date[0])
+                input name: "day", type: "number", title: "Day", required: true
+                input name: "month", type: "number", title: "Month", required: true
+                input name: "year", type: "number", description: "Format(yyyy)", title: "Year", required: true
+            } 
+            else {
+                input name: "day", type: "number", title: "Day", required: true
+                input name: "month", type: "number", title: "Month", required: true
+                input name: "year", type: "number", description: "Format(yyyy)", title: "Year", required: true
+            }
+        }
+    }
+}
+
+def detailPage() {
     dynamicPage(name: "detailPage") {
-        section("${params1?.name}") {
-            def appId = settings.appId
-            def bearer = settings.bearer
-            def json = "%5B%22${params1?.deviceId}%22%5D"
-            // getHistoryForDevice() function present in chaincode is called in this request. 
-            // Modify the endpoint of this URL accordingly if function name is changed
-            // Modify the json parameter sent in this request if definition of the function is changed in the chaincode
-            def paramaters = [
-                uri: "https://api.xooa.com/api/${appId}/query/getHistoryForDevice?args=${json}",
-                headers: [
-                    "Authorization": "Bearer ${bearer}",
-                    "accept": "application/json"
+        section("${state.deviceName}") {
+            log.debug "did: ${state.deviceId}"
+            if(state.deviceId != null) {
+                def appId = settings.appId
+                def apiToken = settings.apiToken
+                def date = Date.parse("yyyy-MM-dd'T'HH:mm:ss", "${settings.year}-${settings.month}-${settings.day}T00:00:00").format("yyyyMMdd")
+                def json = "%5B%22${settings.locationid}%22,%22${state.deviceId}%22,%22${date}%22%5D"
+                // queryByDate() function present in chaincode is called in this request. 
+                // Modify the endpoint of this URL accordingly if function name is changed
+                // Modify the json parameter sent in this request if definition of the function is changed in the chaincode
+                def paramaters = [
+                    uri: "https://api.xooa.com/api/${appId}/query/queryByDate?args=${json}",
+                    headers: [
+                        "Authorization": "Bearer ${apiToken}",
+                        "accept": "application/json"
+                    ]
                 ]
-            ]
-            log.debug "did: ${params1?.deviceId}"
-            if(params1?.deviceId != null) {
                 try {
                     httpGet(paramaters) { resp ->
-                        if(resp.data){
+                        log.debug resp.data
+                        if(resp.data.size()){
                             resp.data = resp.data.reverse()
                             for(transaction in resp.data) {
                                 transaction.Record.time = transaction.Record.time.replaceAll('t',' ')
                                 def time = transaction.Record.time.take(19)
                                 paragraph "${time} - ${transaction.Record.value}"
                             }
+                        } else {
+                            paragraph "No events found for the selected date."
                         }
                     }
                 } catch (groovyx.net.http.HttpResponseException ex) {
@@ -106,7 +154,9 @@ def detailPage(params1) {
                         log.debug ex.response.contentType
                     }
                 }
-            }
+           	} else {
+            	paragraph "Unable to retrieve device ID"
+			}
         }
     }
 }

@@ -161,11 +161,15 @@ Follow the same steps as `Event Logger SmartApp Setup (SmartThings IDE)` but:
 
 7. Enter the **Xooa participant API token** provided in the xooa dashboard under `Identities`.
 
-8. Click **Next** to proceed to view the devices logging to the blockchain.
+8. Enter the **Location Id** for which you want to view events. Keep it as it is if you want to view events of your own location.
 
-9. Click any device to view all the past logged events for that device.
+9. Click **Next** to proceed to view the devices logging to the blockchain.
 
-10. Click **Save** to store **Xooa app ID** and **API Token** with SmartApp for future uses.
+10. Click any device to view the past logged events for that device.
+
+11. Input the date for which you want to view the past logged events.(Last logged date is preset)
+
+12. Click **Save** to store **Xooa app ID**, **API Token** and **Location Id** with SmartApp for future uses.
 
 #### SmartThings new app
 
@@ -185,10 +189,12 @@ Follow the same steps as `Event Logger SmartApp Setup (SmartThings IDE)` but:
 
 7. Enter the **Xooa participant API token** provided in xooa dashboard under `Identities`.
 
-8. Click **Next** to proceed to view devices logging to the blockchain.
+8. Enter the **Location Id** for which you want to view events. Keep it as it is if you want to view events of your own location.
 
-9. Click on any device to view the past logged events for that device.
+9. Click **Next** to proceed to view devices logging to the blockchain.
 
-10. Input the date for which you want to view the past logged events.(Latest logged date is preset)
+10. Click on any device to view the past logged events for that device.
 
-11. Click **Save** to store the **Xooa app ID** and **API Token** with SmartApp for future uses.
+11. Input the date for which you want to view the past logged events.(Latest logged date is preset)
+
+12. Click **Save** to store the **Xooa app ID**, **API Token** and **Location Id** with SmartApp for future uses.
