@@ -17,7 +17,7 @@
  *  https://raw.githubusercontent.com/bkeifer/smartthings/master/Logstash%20Event%20Logger/LogstashEventLogger.groovy
  *
  * Modifications from: Arisht Jain:
- *  https://github.com/xooa/smartThings-xooa
+ *  https://github.com/xooa/samples
  *
  * Changes:
  *  Logs to Xooa blockchain platform instead of Logstash
@@ -32,10 +32,7 @@ definition(
     iconUrl: "http://cdn.device-icons.smartthings.com/Home/home1-icn.png",
     iconX2Url: "http://cdn.device-icons.smartthings.com/Home/home1-icn@2x.png",
     iconX3Url: "http://cdn.device-icons.smartthings.com/Home/home1-icn@3x.png"
-    ) {
-        appSetting "appId"
-        appSetting "apiToken"
-    }
+    )
 
 preferences {
     section("Log these presence sensors:") {
@@ -87,10 +84,8 @@ preferences {
         input "locks", "capability.lock", multiple: true, required: false
     }
     section() {
-        input "appId", "text",
-            title: "Xooa app ID:", submitOnChange: true
         input "apiToken", "text",
-            title: "Xooa Participant API token:", submitOnChange: true
+            title: "Xooa Participant API token:"
     }
 }
 
@@ -133,7 +128,6 @@ def doSubscriptions() {
 }
 
 def genericHandler(evt) {
-	def httpUrl = settings.appId // appId will constitute the URL request.
     def bearer = settings.apiToken // bearer will be passed in header as authorisation for the request to Xooa blockchain platform
 /*
     log.debug("------------------------------")
@@ -157,7 +151,7 @@ def genericHandler(evt) {
     log.debug("unit: ${evt.unit}")
 
    */ 
-    def json = "{\"args\":["
+    def json = "["
     json += "\"${evt.displayName}\","
     json += "\"${evt.device}\","
     json += "\"${evt.isStateChange()}\","
@@ -175,12 +169,12 @@ def genericHandler(evt) {
     json += "\"${evt.value}\","
     json += "\"${evt.name}\","
     json += "\"${evt.isoDate}\""
-    json += "]}"
-    // saveNewEvent() function present in chaincode is called in this request. 
+    json += "]"
+    // saveNewEvent() function present in smart contract is called in this request. 
     // Modify the endpoint of this URL accordingly if function name is changed
-    // Modify the json parameter sent in this request if definition of the function is changed in the chaincode
+    // Modify the json parameter sent in this request if definition of the function is changed in the smart contract
     def params = [
-        uri: "https://api.xooa.com/api/${httpUrl}/invoke/saveNewEvent",
+        uri: "https://api.xooa.com/api/v1/invoke/saveNewEvent",
         headers: [
             "Authorization": "Bearer ${bearer}",
             "content-type": "application/json"
@@ -189,7 +183,48 @@ def genericHandler(evt) {
     ]
     log.debug("Params: ${params}")
     try {
-        httpPostJson(params)
+        httpPostJson(params) { resp ->
+        	log.debug "response from xooa: ${resp.data}, status: ${resp.status}"
+            if(resp.status == 202) {
+            	def sleepTime = 3000
+                def requestCount = 5
+                def i = 0
+                def responseStatus = 202
+            	while (i < requestCount && responseStatus == 202) {
+                	pause(sleepTime)
+                    def params1 = [
+                        uri: "https://api.xooa.com/api/v1/results/${resp.data.resultId}",
+                        headers: [
+                            "Authorization": "Bearer ${bearer}",
+                            "content-type": "application/json"
+                        ]
+                    ]
+                    log.debug("results API params: ${params1}")
+                    try {
+                		def continueRequest = 0
+                    	log.debug "Making API request to check for response."
+                        httpGet(params1) { resp1 ->
+                            log.debug "response from results API endpoint: ${resp1.data}"
+                            if(resp1.status == 200) {
+                            	responseStatus = 200
+                            } else if (resp1.status == 202) {
+                                log.debug "request not processed yet."
+                                i++
+                                continueRequest = 1
+                            }
+                        }
+                        if(continueRequest == 1){
+                        	continue
+                        }
+                    } catch (groovyx.net.http.HttpResponseException ex) {
+                        log.debug "Unexpected response error: ${ex.statusCode}"
+                        log.debug ex
+                        log.debug ex.response.contentType
+                        break
+                    }
+              	}
+            }
+        }
     } catch (groovyx.net.http.HttpResponseException ex) {
         if (ex.statusCode < 200 || ex.statusCode >= 300) {
             log.debug "Unexpected response error: ${ex.statusCode}"

@@ -1,3 +1,23 @@
+ /**
+ *  Blockchain Event Viewer
+ *
+ *  Copyright 2018 Xooa
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ *  in compliance with the License. You may obtain a copy of the License at:
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed
+ *  on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License
+ *  for the specific language governing permissions and limitations under the License.
+ */
+ /*
+ * Original source from Arisht Jain:
+ *  https://github.com/xooa/samples
+ *
+ */
+
 definition(
     name: "Blockchain Event Viewer",
     namespace: "xooa",
@@ -6,10 +26,8 @@ definition(
     category: "Convenience",
 	iconUrl: "http://cdn.device-icons.smartthings.com/Home/home1-icn.png",
     iconX2Url: "http://cdn.device-icons.smartthings.com/Home/home1-icn@2x.png",
-    iconX3Url: "http://cdn.device-icons.smartthings.com/Home/home1-icn@3x.png"){
-        appSetting "appId"
-        appSetting "apiToken"
-    }
+    iconX3Url: "http://cdn.device-icons.smartthings.com/Home/home1-icn@3x.png")
+    
  preferences {
 	page(name: "indexPage", title: "Enter credentials", nextPage: "mainPage", uninstall: true)
     page(name: "mainPage", title: "Your devices", nextPage: "datePage", install: true)
@@ -19,17 +37,9 @@ definition(
 
 def indexPage() {
     dynamicPage(name: "indexPage") {
-    	app.updateSetting("Lid", location.id)
     	section() {
-            input "appId", "text",
-                title: "Xooa app ID:", submitOnChange: true
             input "apiToken", "text",
-                title: "Xooa Participant API token:", submitOnChange: true
-            input "locationid", "text",
-                title: "Location ID:", submitOnChange: true, defaultValue: location.id
-            paragraph "You can share your location id with another user to share events of your devices."
-            input "Lid", "text",
-                title: "Your Location ID:", defaultValue: location.id
+                title: "Xooa Participant API token:"
         }
     }
 }
@@ -38,25 +48,81 @@ def mainPage() {
     dynamicPage(name: "mainPage") {
         section() {
         	log.debug "settings: ${settings}"
-            def appId = settings.appId
             def apiToken = settings.apiToken
-            // queryLocation() function present in chaincode is called in this request. 
+
+            // queryLocation() function present in smart contract is called in this request. 
             // Modify the endpoint of this URL accordingly if function name is changed
             def params = [
-                uri: "https://api.xooa.com/api/${appId}/query/queryLocation?args=%5B%22${settings.locationid}%22%5D",
+                uri: "https://api.xooa.com/api/v1/query/queryLocation",
                 headers: [
                     "Authorization": "Bearer ${apiToken}",
                     "accept": "text/html",
                     "requestContentType": "text/html",
                     "contentType": "text/html"
-                ]
+                ],
+                body: "[]"
             ]
+            log.debug("queryLocation API params: ${params}")
             try {
-                httpGet(params) { resp ->
+                httpPostJson(params) { resp ->
                 	log.debug resp.data
-                	if(resp.data.size()){
+                    if(resp.status == 202) {
+                        def sleepTime = 3000
+                        def requestCount = 5
+                        def i = 0
+                        def responseStatus = 202
+                        while (i < requestCount && responseStatus == 202) {
+                            pause(sleepTime)
+                            def params1 = [
+                                uri: "https://api.xooa.com/api/v1/results/${resp.data.resultId}",
+                                headers: [
+                                    "Authorization": "Bearer ${bearer}",
+                                    "content-type": "application/json"
+                                ]
+                            ]
+                            log.debug("results API params: ${params1}")
+                            try {
+                                def continueRequest = 0
+                                log.debug "Making API request to check for response."
+                                httpGet(params1) { resp1 ->
+                                    log.debug "response from results API endpoint: ${resp1.data}"
+                                    if(resp1.status == 200  && resp1.data.payload.size()) {
+                                        responseStatus = 200
+                                        paragraph "Click on the devices to view full details"
+                                        for(device in resp.data.payload) {
+                                            device.Record.time = device.Record.time.replaceAll('t',' ')
+                                            def time = device.Record.time.take(19)
+                                            def date = device.Record.time.take(10)
+                                            def hrefParams = [
+                                                deviceId: "${device.Key}",
+                                                name: "${device.Record.displayName}",
+                                                date: "${date}"
+                                            ]
+                                            href(name: "toDatePage",
+                                                title: "${device.Record.displayName} - ${device.Record.value}",
+                                                description: "Last updated at: ${time}",
+                                                params: hrefParams,
+                                                page: "datePage")
+                                        }
+                                    } else if (resp1.status == 202) {
+                                        log.debug "request not processed yet."
+                                        i++
+                                        continueRequest = 1
+                                    }
+                                }
+                                if(continueRequest == 1){
+                                    continue
+                                }
+                            } catch (groovyx.net.http.HttpResponseException ex) {
+                                log.debug "Unexpected response error: ${ex.statusCode}"
+                                log.debug ex
+                                log.debug ex.response.contentType
+                                break
+                            }
+                        }
+                    } else if(resp.data.payload.size()){
             			paragraph "Click on the devices to view full details"
-                        for(device in resp.data) {
+                        for(device in resp.data.payload) {
                             device.Record.time = device.Record.time.replaceAll('t',' ')
                             def time = device.Record.time.take(19)
                             def date = device.Record.time.take(10)
@@ -119,26 +185,72 @@ def detailPage() {
         section("${state.deviceName}") {
             log.debug "did: ${state.deviceId}"
             if(state.deviceId != null) {
-                def appId = settings.appId
                 def apiToken = settings.apiToken
                 def date = Date.parse("yyyy-MM-dd'T'HH:mm:ss", "${settings.year}-${settings.month}-${settings.day}T00:00:00").format("yyyyMMdd")
-                def json = "%5B%22${settings.locationid}%22,%22${state.deviceId}%22,%22${date}%22%5D"
-                // queryByDate() function present in chaincode is called in this request. 
+                def json = "[\"${state.deviceId}\",\"${date}\"]"
+
+                // queryByDate() function present in smart contract is called in this request. 
                 // Modify the endpoint of this URL accordingly if function name is changed
-                // Modify the json parameter sent in this request if definition of the function is changed in the chaincode
-                def paramaters = [
-                    uri: "https://api.xooa.com/api/${appId}/query/queryByDate?args=${json}",
+                // Modify the json parameter sent in this request if definition of the function is changed in the smart contract
+                def parameters = [
+                    uri: "https://api.xooa.com/api/v1/query/queryByDate",
                     headers: [
                         "Authorization": "Bearer ${apiToken}",
                         "accept": "application/json"
-                    ]
+                    ],
+                    body: json
                 ]
+                log.debug parameters
                 try {
-                    httpGet(paramaters) { resp ->
+                    httpPostJson(parameters) { resp ->
                         log.debug resp.data
-                        if(resp.data.size()){
-                            resp.data = resp.data.reverse()
-                            for(transaction in resp.data) {
+                        if(resp.status == 202) {
+                            def sleepTime = 3000
+                            def requestCount = 5
+                            def i = 0
+                            def responseStatus = 202
+                            while (i < requestCount && responseStatus == 202) {
+                                pause(sleepTime)
+                                def params1 = [
+                                    uri: "https://api.xooa.com/api/v1/results/${resp.data.resultId}",
+                                    headers: [
+                                        "Authorization": "Bearer ${bearer}",
+                                        "content-type": "application/json"
+                                    ]
+                                ]
+                                log.debug("results API params: ${params1}")
+                                try {
+                                    def continueRequest = 0
+                                    log.debug "Making API request to check for response."
+                                    httpGet(params1) { resp1 ->
+                                        log.debug "response from results API endpoint: ${resp1.data}"
+                                        if(resp1.status == 200 && resp1.data.size()) {
+                                            responseStatus = 200
+                                            resp.data.payload = resp.data.payload.reverse()
+                                            for(transaction in resp.data.payload) {
+                                                transaction.Record.time = transaction.Record.time.replaceAll('t',' ')
+                                                def time = transaction.Record.time.take(19)
+                                                paragraph "${time} - ${transaction.Record.value}"
+                                            }
+                                        } else if (resp1.status == 202) {
+                                            log.debug "request not processed yet."
+                                            i++
+                                            continueRequest = 1
+                                        }
+                                    }
+                                    if(continueRequest == 1){
+                                        continue
+                                    }
+                                } catch (groovyx.net.http.HttpResponseException ex) {
+                                    log.debug "Unexpected response error: ${ex.statusCode}"
+                                    log.debug ex
+                                    log.debug ex.response.contentType
+                                    break
+                                }
+                            }
+                        } else if(resp.data.payload.size()){
+                            resp.data.payload = resp.data.payload.reverse()
+                            for(transaction in resp.data.payload) {
                                 transaction.Record.time = transaction.Record.time.replaceAll('t',' ')
                                 def time = transaction.Record.time.take(19)
                                 paragraph "${time} - ${transaction.Record.value}"
