@@ -24,9 +24,9 @@ definition(
     author: "Arisht Jain",
     description: "Provides information about the state and past events of the specified devices.",
     category: "Convenience",
-	iconUrl: "http://cdn.device-icons.smartthings.com/Home/home1-icn.png",
-    iconX2Url: "http://cdn.device-icons.smartthings.com/Home/home1-icn@2x.png",
-    iconX3Url: "http://cdn.device-icons.smartthings.com/Home/home1-icn@3x.png")
+	iconUrl: "https://xooa.com/blockchain/img/logo1.png",
+    iconX2Url: "https://xooa.com/blockchain/img/logo1.png",
+    iconX3Url: "https://xooa.com/blockchain/img/logo1.png")
     
  preferences {
 	page(name: "indexPage", title: "Enter credentials", nextPage: "mainPage", uninstall: true)
