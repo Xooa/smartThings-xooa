@@ -16,7 +16,7 @@
  * Original source via Brian Keifer:
  *  https://raw.githubusercontent.com/bkeifer/smartthings/master/Logstash%20Event%20Logger/LogstashEventLogger.groovy
  *
- * Modifications from: Arisht Jain:
+ * Modifications by: Arisht Jain:
  *  https://github.com/xooa/samples
  *
  * Changes:
@@ -27,7 +27,7 @@ definition(
     name: "Blockchain Event Logger",
     namespace: "xooa",
     author: "Arisht Jain",
-    description: "Log smartThings events to Xooa blockchain platform.",
+    description: "Log SmartThings events to Xooa blockchain platform.",
     category: "Convenience",
     iconUrl: "https://xooa.com/blockchain/img/logo1.png",
     iconX2Url: "https://xooa.com/blockchain/img/logo1.png",
@@ -151,30 +151,36 @@ def genericHandler(evt) {
     log.debug("unit: ${evt.unit}")
 
    */ 
+    def date = evt.isoDate.replaceAll("-","")
+    date = date.split('T')[0];
     def json = "["
-    json += "\"${evt.displayName}\","
-    json += "\"${evt.device}\","
-    json += "\"${evt.isStateChange()}\","
-    json += "\"${evt.id}\","
-    json += "\"${evt.description}\","
-    json += "\"${evt.descriptionText}\","
-    json += "\"${evt.installedSmartAppId}\","
-    json += "\"${evt.isDigital()}\","
-    json += "\"${evt.isPhysical()}\","
-    json += "\"${evt.deviceId}\","
-    json += "\"${evt.location}\","
-    json += "\"${evt.locationId}\","
-    json += "\"${evt.source}\","
-    json += "\"${evt.unit}\","
-    json += "\"${evt.value}\","
-    json += "\"${evt.name}\","
-    json += "\"${evt.isoDate}\""
-    json += "]"
+    json += "\"${evt.deviceId}~${evt.isoDate}\","
+    json += "{\"docType\":\"Event\","
+    json += "\"displayName\":\"${evt.displayName}\","
+    json += "\"device\":\"${evt.device}\","
+    json += "\"isStateChange\":\"${evt.isStateChange()}\","
+    json += "\"id\":\"${evt.id}\","
+    json += "\"description\":\"${evt.description}\","
+    json += "\"descriptionText\":\"${evt.descriptionText}\","
+    json += "\"installedSmartAppId\":\"${evt.installedSmartAppId}\","
+    json += "\"isDigital\":\"${evt.isDigital()}\","
+    json += "\"isPhysical\":\"${evt.isPhysical()}\","
+    json += "\"deviceId\":\"${evt.deviceId}\","
+    json += "\"location\":\"${evt.location}\","
+    json += "\"locationId\":\"${evt.locationId}\","
+    json += "\"source\":\"${evt.source}\","
+    json += "\"unit\":\"${evt.unit}\","
+    json += "\"value\":\"${evt.value}\","
+    json += "\"name\":\"${evt.name}\","
+    json += "\"date\":\"${date}\","
+    json += "\"time\":\"${evt.isoDate}\""
+    json += "}]"
+
     // saveNewEvent() function present in smart contract is called in this request. 
     // Modify the endpoint of this URL accordingly if function name is changed
     // Modify the json parameter sent in this request if definition of the function is changed in the smart contract
     def params = [
-        uri: "https://api.xooa.com/api/v1/invoke/saveNewEvent",
+        uri: "https://api.xooa.com/api/v1/states",
         headers: [
             "Authorization": "Bearer ${bearer}",
             "content-type": "application/json"
@@ -183,7 +189,7 @@ def genericHandler(evt) {
     ]
     log.debug("Params: ${params}")
     try {
-        httpPostJson(params) { resp ->
+        httpPutJson(params) { resp ->
         	log.debug "response from xooa: ${resp.data}, status: ${resp.status}"
             if(resp.status == 202) {
             	def sleepTime = 3000
@@ -193,6 +199,80 @@ def genericHandler(evt) {
             	while (i < requestCount && responseStatus == 202) {
                 	pause(sleepTime)
                     def params1 = [
+                        uri: "https://api.xooa.com/api/v1/results/${resp.data.resultId}",
+                        headers: [
+                            "Authorization": "Bearer ${bearer}",
+                            "content-type": "application/json"
+                        ]
+                    ]
+                    log.debug("results API params: ${params1}")
+                    try {
+                		def continueRequest = 0
+                    	log.debug "Making API request to check for response."
+                        httpGet(params1) { resp1 ->
+                            log.debug "response from results API endpoint: ${resp1.data}"
+                            if(resp1.status == 200) {
+                            	responseStatus = 200
+                            } else if (resp1.status == 202) {
+                                log.debug "request not processed yet."
+                                i++
+                                continueRequest = 1
+                            }
+                        }
+                        if(continueRequest == 1){
+                        	continue
+                        }
+                    } catch (groovyx.net.http.HttpResponseException ex) {
+                        log.debug "Unexpected response error: ${ex.statusCode}"
+                        log.debug ex
+                        log.debug ex.response.contentType
+                        break
+                    }
+              	}
+            }
+        }
+    } catch (groovyx.net.http.HttpResponseException ex) {
+        if (ex.statusCode < 200 || ex.statusCode >= 300) {
+            log.debug "Unexpected response error: ${ex.statusCode}"
+            log.debug ex
+            log.debug ex.response.contentType
+        }
+    }
+    
+    
+    
+    
+    def json1 = "["
+    json1 += "\"${evt.deviceId}\","
+    json1 += "{\"docType\":\"EventLess\","
+    json1 += "\"displayName\":\"${evt.displayName}\","
+    json1 += "\"locationId\":\"${evt.locationId}\","
+    json1 += "\"value\":\"${evt.value}\","
+    json1 += "\"time\":\"${evt.isoDate}\""
+    json1 += "}]"
+
+    // Modify the endpoint of this URL accordingly if function name is changed
+    // Modify the json parameter sent in this request if definition of the function is changed in the smart contract
+    def params2 = [
+        uri: "https://api.xooa.com/api/v1/states",
+        headers: [
+            "Authorization": "Bearer ${bearer}",
+            "content-type": "application/json"
+        ],
+        body: json1
+    ]
+    log.debug("Params2: ${params2}")
+    try {
+        httpPutJson(params2) { resp ->
+        	log.debug "response from xooa: ${resp.data}, status: ${resp.status}"
+            if(resp.status == 202) {
+            	def sleepTime = 3000
+                def requestCount = 5
+                def i = 0
+                def responseStatus = 202
+            	while (i < requestCount && responseStatus == 202) {
+                	pause(sleepTime)
+                    def params3 = [
                         uri: "https://api.xooa.com/api/v1/results/${resp.data.resultId}",
                         headers: [
                             "Authorization": "Bearer ${bearer}",

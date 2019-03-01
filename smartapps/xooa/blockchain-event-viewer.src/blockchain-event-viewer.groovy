@@ -53,18 +53,17 @@ def mainPage() {
             // queryLocation() function present in smart contract is called in this request. 
             // Modify the endpoint of this URL accordingly if function name is changed
             def params = [
-                uri: "https://api.xooa.com/api/v1/query/queryLocation",
+                uri: "https://api.xooa.com/api/v1/states/query?selector=%7B%22docType%22%3A%22EventLess%22%7D",
                 headers: [
                     "Authorization": "Bearer ${apiToken}",
                     "accept": "text/html",
                     "requestContentType": "text/html",
                     "contentType": "text/html"
-                ],
-                body: "[]"
+                ]
             ]
             log.debug("queryLocation API params: ${params}")
             try {
-                httpPostJson(params) { resp ->
+                httpGet(params) { resp ->
                 	log.debug resp.data
                     if(resp.status == 202) {
                         def sleepTime = 3000
@@ -86,20 +85,20 @@ def mainPage() {
                                 log.debug "Making API request to check for response."
                                 httpGet(params1) { resp1 ->
                                     log.debug "response from results API endpoint: ${resp1.data}"
-                                    if(resp1.status == 200  && resp1.data.payload.size()) {
+                                    if(resp1.status == 200  && resp1.data.data.size()) {
                                         responseStatus = 200
                                         paragraph "Click on the devices to view full details"
-                                        for(device in resp.data.payload) {
-                                            device.Record.time = device.Record.time.replaceAll('t',' ')
-                                            def time = device.Record.time.take(19)
-                                            def date = device.Record.time.take(10)
+                                        for(device in resp.data.data) {
+                                            device.value.time = device.value.time.replaceAll('t',' ')
+                                            def time = device.value.time.take(19)
+                                            def date = device.value.time.take(10)
                                             def hrefParams = [
-                                                deviceId: "${device.Key}",
-                                                name: "${device.Record.displayName}",
+                                                deviceId: "${device.key}",
+                                                name: "${device.value.displayName}",
                                                 date: "${date}"
                                             ]
                                             href(name: "toDatePage",
-                                                title: "${device.Record.displayName} - ${device.Record.value}",
+                                                title: "${device.value.displayName} - ${device.value.value}",
                                                 description: "Last updated at: ${time}",
                                                 params: hrefParams,
                                                 page: "datePage")
@@ -120,19 +119,19 @@ def mainPage() {
                                 break
                             }
                         }
-                    } else if(resp.data.payload.size()){
+                    } else if(resp.data.data.size()){
             			paragraph "Click on the devices to view full details"
-                        for(device in resp.data.payload) {
-                            device.Record.time = device.Record.time.replaceAll('t',' ')
-                            def time = device.Record.time.take(19)
-                            def date = device.Record.time.take(10)
+                        for(device in resp.data.data) {
+                            device.value.time = device.value.time.replaceAll('t',' ')
+                            def time = device.value.time.take(19)
+                            def date = device.value.time.take(10)
                             def hrefParams = [
-                                deviceId: "${device.Key}",
-                                name: "${device.Record.displayName}",
+                                deviceId: "${device.key}",
+                                name: "${device.value.displayName}",
                                 date: "${date}"
                             ]
                             href(name: "toDatePage",
-                                title: "${device.Record.displayName} - ${device.Record.value}",
+                                title: "${device.value.displayName} - ${device.value.value}",
                                 description: "Last updated at: ${time}",
                                 params: hrefParams,
                                 page: "datePage")
@@ -193,16 +192,15 @@ def detailPage() {
                 // Modify the endpoint of this URL accordingly if function name is changed
                 // Modify the json parameter sent in this request if definition of the function is changed in the smart contract
                 def parameters = [
-                    uri: "https://api.xooa.com/api/v1/query/queryByDate",
+                    uri: "https://api.xooa.com/api/v1/states/query?selector=%7B%22docType%22%3A%22Event%22,%22deviceId%22%3A%22${state.deviceId}%22,%22date%22%3A%22${date}%22%7D&fields=value,time",
                     headers: [
                         "Authorization": "Bearer ${apiToken}",
                         "accept": "application/json"
-                    ],
-                    body: json
+                    ]
                 ]
                 log.debug parameters
                 try {
-                    httpPostJson(parameters) { resp ->
+                    httpGet(parameters) { resp ->
                         log.debug resp.data
                         if(resp.status == 202) {
                             def sleepTime = 3000
@@ -224,13 +222,13 @@ def detailPage() {
                                     log.debug "Making API request to check for response."
                                     httpGet(params1) { resp1 ->
                                         log.debug "response from results API endpoint: ${resp1.data}"
-                                        if(resp1.status == 200 && resp1.data.size()) {
+                                        if(resp1.status == 200 && resp1.data.data.size()) {
                                             responseStatus = 200
-                                            resp.data.payload = resp.data.payload.reverse()
-                                            for(transaction in resp.data.payload) {
-                                                transaction.Record.time = transaction.Record.time.replaceAll('t',' ')
-                                                def time = transaction.Record.time.take(19)
-                                                paragraph "${time} - ${transaction.Record.value}"
+                                            resp.data.data = resp.data.data.reverse()
+                                            for(transaction in resp.data.data) {
+                                                transaction.value.time = transaction.value.time.replaceAll('t',' ')
+                                                def time = transaction.value.time.take(19)
+                                                paragraph "${time} - ${transaction.value.value}"
                                             }
                                         } else if (resp1.status == 202) {
                                             log.debug "request not processed yet."
@@ -248,12 +246,12 @@ def detailPage() {
                                     break
                                 }
                             }
-                        } else if(resp.data.payload.size()){
-                            resp.data.payload = resp.data.payload.reverse()
-                            for(transaction in resp.data.payload) {
-                                transaction.Record.time = transaction.Record.time.replaceAll('t',' ')
-                                def time = transaction.Record.time.take(19)
-                                paragraph "${time} - ${transaction.Record.value}"
+                        } else if(resp.data.data.size()){
+                            resp.data.data = resp.data.data.reverse()
+                            for(transaction in resp.data.data) {
+                                transaction.value.time = transaction.value.time.replaceAll('t',' ')
+                                def time = transaction.value.time.take(19)
+                                paragraph "${time} - ${transaction.value.value}"
                             }
                         } else {
                             paragraph "No events found for the selected date."
