@@ -53,7 +53,7 @@ def mainPage() {
             // queryLocation() function present in smart contract is called in this request. 
             // Modify the endpoint of this URL accordingly if function name is changed
             def params = [
-                uri: "https://api.xooa.com/api/v1/states/query?selector=%7B%22docType%22%3A%22EventLess%22%7D",
+                uri: "https://api.xooa.com/api/v1/xldb/query?selector=%7B%22docType%22%3A%22EventLess%22%7D",
                 headers: [
                     "Authorization": "Bearer ${apiToken}",
                     "accept": "text/html",
@@ -192,7 +192,7 @@ def detailPage() {
                 // Modify the endpoint of this URL accordingly if function name is changed
                 // Modify the json parameter sent in this request if definition of the function is changed in the smart contract
                 def parameters = [
-                    uri: "https://api.xooa.com/api/v1/states/query?selector=%7B%22docType%22%3A%22Event%22,%22deviceId%22%3A%22${state.deviceId}%22,%22date%22%3A%22${date}%22%7D&fields=value,time",
+                    uri: "https://api.xooa.com/api/v1/xldb/query?selector=%7B%22docType%22%3A%22Event%22,%22deviceId%22%3A%22${state.deviceId}%22,%22date%22%3A%22${date}%22%7D&fields=value,time",
                     headers: [
                         "Authorization": "Bearer ${apiToken}",
                         "accept": "application/json"

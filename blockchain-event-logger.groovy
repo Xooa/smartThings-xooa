@@ -180,7 +180,7 @@ def genericHandler(evt) {
     // Modify the endpoint of this URL accordingly if function name is changed
     // Modify the json parameter sent in this request if definition of the function is changed in the smart contract
     def params = [
-        uri: "https://api.xooa.com/api/v1/states",
+        uri: "https://api.xooa.com/api/v1/xldb/createupdate",
         headers: [
             "Authorization": "Bearer ${bearer}",
             "content-type": "application/json"
@@ -254,7 +254,7 @@ def genericHandler(evt) {
     // Modify the endpoint of this URL accordingly if function name is changed
     // Modify the json parameter sent in this request if definition of the function is changed in the smart contract
     def params2 = [
-        uri: "https://api.xooa.com/api/v1/states",
+        uri: "https://api.xooa.com/api/v1/xldb/createupdate",
         headers: [
             "Authorization": "Bearer ${bearer}",
             "content-type": "application/json"
