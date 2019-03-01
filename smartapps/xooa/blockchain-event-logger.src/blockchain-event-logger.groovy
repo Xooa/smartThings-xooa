@@ -189,7 +189,7 @@ def genericHandler(evt) {
     ]
     log.debug("Params: ${params}")
     try {
-        httpPutJson(params) { resp ->
+        httpPostJson(params) { resp ->
         	log.debug "response from xooa: ${resp.data}, status: ${resp.status}"
             if(resp.status == 202) {
             	def sleepTime = 3000
@@ -263,7 +263,7 @@ def genericHandler(evt) {
     ]
     log.debug("Params2: ${params2}")
     try {
-        httpPutJson(params2) { resp ->
+        httpPostJson(params2) { resp ->
         	log.debug "response from xooa: ${resp.data}, status: ${resp.status}"
             if(resp.status == 202) {
             	def sleepTime = 3000
